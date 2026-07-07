@@ -1,11 +1,10 @@
-import "./App.css";
+import AppRoutes from './routes/AppRoutes';
 
 function App(){
   return (
-    <div>
-      <h1>AI Resume Screening & ATS Platform</h1>
-    </div>
+      <AppRoutes />
   )
 }
+
 
 export default App;
