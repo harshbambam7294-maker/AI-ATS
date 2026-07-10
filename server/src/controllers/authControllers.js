@@ -4,8 +4,7 @@ const bcrypt = require("bcrypt");
 
 const jwt = require("jsonwebtoken");
 
-const registerUser = async (req, res) => {
-    try {
+const registerUser = asyncHandler(async (req, res) => {
 
         const { name, email, password, role } = req.body;
 
@@ -51,19 +50,9 @@ const registerUser = async (req, res) => {
                 createdAt: user.createdAt,
             },
         });
-    } catch (error) {
+});
 
-        res.status(500).json({
-            success: false,
-            message: error.message,
-        });
-
-    }
-};
-
-const loginUser = async (req, res) => {
-    try {
-
+const loginUser = asyncHandler(async (req, res) => {
         const { email, password } = req.body;
 
         // Check required fields
@@ -117,16 +106,7 @@ const loginUser = async (req, res) => {
                 role: user.role,
             }
         });
-
-    } catch (error) {
-
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
-
-    }
-};
+});
 
 module.exports = {
     registerUser,

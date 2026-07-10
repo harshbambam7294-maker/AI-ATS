@@ -1,7 +1,6 @@
 const Company = require("../models/Company");
 
-const createCompany = async (req, res) => {
-    try {
+const createCompany = asyncHandler(async (req, res) => {
 
         const { name, description, website, location, logo } = req.body;
 
@@ -26,19 +25,10 @@ const createCompany = async (req, res) => {
             message: "Company created successfully",
             company,
         });
+});
 
-    } catch (error) {
+const getCompanies = asyncHandler(async (req, res) => {
 
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        });
-
-    }
-};
-
-const getCompanies = async (req, res) => {
-    try {
 
         const companies = await Company.find({
             createdBy: req.user.id,
@@ -49,18 +39,9 @@ const getCompanies = async (req, res) => {
             companies,
         });
 
-    } catch (error) {
+});
 
-        return res.status(500).json({
-            success: false,
-            message: error.message,
-        });
-
-    }
-};
-
-const updateCompany = async (req, res) => {
-    try {
+const updateCompany = asyncHandler(async (req, res) => {
 
         const { id } = req.params;
         const { name, description, website, location, logo } = req.body;
@@ -95,19 +76,69 @@ const updateCompany = async (req, res) => {
             message: "Company updated successfully",
             company,
         });
+});
 
-    } catch (error) {
+const getCompanyById = asyncHandler(async (req, res) => {
 
-        return res.status(500).json({
-            success: false,
-            message: error.message,
+        const { id } = req.params;
+
+        const company = await Company.findById(id);
+
+        if (!company) {
+            return res.status(404).json({
+                success: false,
+                message: "Company not found",
+            });
+        }
+
+        // Only owner can view
+        if (company.createdBy.toString() !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: "Access Denied",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            company,
+        });
+});
+
+const deleteCompany = asyncHandler(async (req, res) => {
+
+        const { id } = req.params;
+
+        const company = await Company.findById(id);
+
+        if (!company) {
+            return res.status(404).json({
+                success: false,
+                message: "Company not found",
+            });
+        }
+
+        // Only owner can delete
+        if (company.createdBy.toString() !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to delete this company",
+            });
+        }
+
+        await Company.findByIdAndDelete(id);
+
+        return res.status(200).json({
+            success: true,
+            message: "Company deleted successfully",
         });
 
-    }
-};
+});
 
 module.exports = {
     createCompany,
     getCompanies,
+    getCompanyById,
     updateCompany,
-};
+    deleteCompany,
+};``

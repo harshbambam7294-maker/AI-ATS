@@ -25,3 +25,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 
 module.exports = app;
+
+const errorHandler = require("./middleware/errorMiddleware");
+
+app.use(errorHandler);
