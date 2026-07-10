@@ -213,6 +213,105 @@ const deleteJob = async (req, res) => {
 
     }
 };
+const getPublicJobs = async (req, res) => {
+    try {
+
+        const {
+            search,
+            location,
+            employmentType,
+            experience,
+            salary,
+            page = 1,
+            limit = 10
+        } = req.query;
+
+        let query = {};
+
+        // Search
+        if (search) {
+            query.$or = [
+                { title: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } },
+                { location: { $regex: search, $options: "i" } },
+                { requirements: { $regex: search, $options: "i" } }
+            ];
+        }
+
+        // Filters
+        if (location) {
+            query.location = {
+                $regex: location,
+                $options: "i"
+            };
+        }
+
+        if (employmentType) {
+            query.employmentType = employmentType;
+        }
+
+        if (experience) {
+            query.experience = {
+                $gte: Number(experience)
+            };
+        }
+
+        if (salary) {
+            query.salary = {
+                $gte: Number(salary)
+            };
+        }
+
+        const currentPage = Number(page);
+        const pageLimit = Number(limit);
+
+        const skip = (currentPage - 1) * pageLimit;
+
+        const totalJobs = await Job.countDocuments(query);
+
+        const jobs = await Job.find(query)
+            .populate("company")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(pageLimit);
+
+        res.status(200).json({
+            totalJobs,
+            totalPages: Math.ceil(totalJobs / pageLimit),
+            currentPage,
+            limit: pageLimit,
+            hasNextPage: currentPage < Math.ceil(totalJobs / pageLimit),
+            hasPrevPage: currentPage > 1,
+            jobs
+});
+
+    } catch (error) {
+
+        res.status(500).json({
+            message: error.message
+        });
+
+    }
+};
+
+const getPublicJobById = async (req, res) => {
+    try {
+        const job = await Job.findById(req.params.id).populate("company");
+
+        if (!job) {
+            return res.status(404).json({
+                message: "Job not found"
+            });
+        }
+
+        res.status(200).json(job);
+
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+};
 
 module.exports = {
     createJob,
@@ -220,4 +319,6 @@ module.exports = {
     getJobById,
     updateJob,
     deleteJob,
+    getPublicJobs,
+    getPublicJobById,
 };

@@ -10,7 +10,19 @@ const {
     getJobById,
     updateJob,
     deleteJob,
+    getPublicJobs,
+    getPublicJobById,
 } = require("../controllers/jobController");
+
+router.get(
+    "/public",
+    getPublicJobs
+);
+
+router.get(
+    "/public/:id", 
+    getPublicJobById
+);
 
 // Create Job
 router.post(
@@ -43,6 +55,8 @@ router.put(
     authorize("recruiter"),
     updateJob
 );
+
+
 
 // Delete Job
 router.delete(
