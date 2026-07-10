@@ -2,6 +2,8 @@ const User = require("../models/User");
 
 const bcrypt = require("bcrypt");
 
+const jwt = require("jsonwebtoken");
+
 const registerUser = async (req, res) => {
     try {
 
@@ -16,11 +18,8 @@ const registerUser = async (req, res) => {
         }
 
         // Check if user already exists
-        console.log("Incoming Email:", email);
 
         const existingUser = await User.findOne({ email });
-
-        console.log("Existing User:", existingUser);
 
         if (existingUser) {
             return res.status(400).json({
@@ -61,8 +60,6 @@ const registerUser = async (req, res) => {
 
     }
 };
-
-const jwt = require("jsonwebtoken");
 
 const loginUser = async (req, res) => {
     try {
