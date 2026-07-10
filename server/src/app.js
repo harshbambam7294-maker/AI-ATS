@@ -10,6 +10,8 @@ const jobRoutes = require("./routes/jobRoutes");
 
 const companyRoutes = require("./routes/companyRoutes");
 
+const applicationRoutes = require("./routes/applicationRoutes");
+
 app.use(express.json());
 
 app.use("/api/test", testRoutes);
@@ -23,6 +25,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/applications", applicationRoutes);
 
 module.exports = app;
 

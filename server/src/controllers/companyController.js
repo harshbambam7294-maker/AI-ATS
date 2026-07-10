@@ -1,5 +1,7 @@
 const Company = require("../models/Company");
 
+const asyncHandler = require("express-async-handler");
+
 const createCompany = asyncHandler(async (req, res) => {
 
         const { name, description, website, location, logo } = req.body;
