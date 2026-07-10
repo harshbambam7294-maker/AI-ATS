@@ -8,11 +8,15 @@ const testRoutes = require("./routes/testRoutes");
 
 const jobRoutes = require("./routes/jobRoutes");
 
+const companyRoutes = require("./routes/companyRoutes");
+
 app.use(express.json());
 
 app.use("/api/test", testRoutes);
 
 app.use("/api/jobs", jobRoutes);
+
+app.use("/api/company", companyRoutes);
 
 app.get("/", (req, res) => {
     res.send("Welcome to HireIQ API 🚀");
