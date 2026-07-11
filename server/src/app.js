@@ -12,7 +12,11 @@ const companyRoutes = require("./routes/companyRoutes");
 
 const applicationRoutes = require("./routes/applicationRoutes");
 
+const userRoutes = require("./routes/userRoutes");
+
 app.use(express.json());
+
+app.use("/api/users", userRoutes);
 
 app.use("/api/test", testRoutes);
 
