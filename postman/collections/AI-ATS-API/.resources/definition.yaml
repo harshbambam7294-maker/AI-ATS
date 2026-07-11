@@ -1,0 +1,9 @@
+$kind: collection
+name: AI-ATS API
+variables:
+  - key: email
+    value: ''
+  - key: password
+    value: ''
+  - key: authToken
+    value: ''
