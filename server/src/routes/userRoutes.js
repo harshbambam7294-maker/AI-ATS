@@ -2,16 +2,26 @@ const express = require("express");
 
 const router = express.Router();
 
-const { protect } = require("../middleware/authMiddleware");
+const { protect, authorize } = require("../middleware/authMiddleware");
 const upload = require("../middleware/upload");
 
-const { uploadResume } = require("../controllers/userController");
+const {
+    uploadResume,
+    getProfile
+} = require("../controllers/userController");
 
 router.post(
     "/upload-resume",
     protect,
+    authorize("candidate"),
     upload.single("resume"),
     uploadResume
+);
+
+router.get(
+    "/profile",
+    protect,
+    getProfile
 );
 
 module.exports = router;

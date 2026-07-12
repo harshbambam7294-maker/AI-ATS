@@ -1,5 +1,7 @@
 const Job = require("../models/Job");
 const Company = require("../models/Company");
+const JobAI = require("../models/JobAI");
+const parseJob = require("../ai/parsers/jobParser");
 
 const createJob = async (req, res) => {
 
@@ -16,6 +18,7 @@ const createJob = async (req, res) => {
             companyId,
         } = req.body;
 
+        
         if (
             !title ||
             !description ||
@@ -56,10 +59,59 @@ const createJob = async (req, res) => {
             createdBy: req.user.id,
         });
 
+        // ---------------------------
+        // AI Job Parsing
+        // ---------------------------
+
+        const jobText = `
+        Title: ${title}
+
+        Description:
+        ${description}
+
+        Requirements:
+        ${requirements || ""}
+
+        Experience:
+        ${experience || ""}
+
+        Employment Type:
+        ${employmentType || ""}
+
+        Location:
+        ${location}
+        `;
+
+        try {
+
+        const parsedJob = await parseJob(jobText);
+
+        await JobAI.findOneAndUpdate(
+            {
+                job: job._id
+            },
+            {
+                job: job._id,
+                parsedJob
+            },
+            {
+                upsert: true,
+                new: true
+            }
+        );
+
+    } catch (error) {
+
+        console.error("AI Parsing Failed:", error.message);
+
+    }
+
+
         return res.status(201).json({
             success: true,
             message: "Job Created Successfully",
             job,
+            aiParsed: true
         });
 
     } catch (error) {
@@ -156,9 +208,55 @@ const updateJob = async (req, res) => {
             });
         }
 
-        Object.assign(job, req.body);
+        job.title = req.body.title ?? job.title;
+        job.requirements = req.body.requirements ?? job.requirements;
+        job.description = req.body.description ?? job.description;
+        job.location = req.body.location ?? job.location;
+        job.salary = req.body.salary ?? job.salary;
+        
+        job.experience = req.body.experience ?? job.experience;
+        
+        job.employmentType = req.body.employmentType ?? job.employmentType;
 
-        await job.save();
+        
+
+        // ---------------------------
+        // Re-parse updated job
+        // ---------------------------
+
+        const jobText = `
+        Title: ${job.title}
+
+        Description:
+        ${job.description}
+
+        Requirements:
+        ${job.requirements || ""}
+
+        Experience:
+        ${job.experience || ""}
+
+        Employment Type:
+        ${job.employmentType || ""}
+
+        Location:
+        ${job.location}
+        `;
+
+        const parsedJob = await parseJob(jobText);
+
+        await JobAI.findOneAndUpdate(
+            {
+                job: job._id
+            },
+            {
+                parsedJob
+            },
+            {
+                upsert: true,
+                new: true
+            }
+        );
 
         return res.status(200).json({
             success: true,
@@ -198,6 +296,10 @@ const deleteJob = async (req, res) => {
         }
 
         await Job.findByIdAndDelete(id);
+
+        await JobAI.findOneAndDelete({
+        job: id
+        });
 
         return res.status(200).json({
             success: true,

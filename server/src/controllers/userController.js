@@ -1,5 +1,11 @@
 const User = require("../models/User");
+const ResumeAI = require("../models/ResumeAI");
+
 const cloudinary = require("../config/cloudinary");
+
+const extractText = require("../ai/parsers/pdfParser");
+const parseResume = require("../ai/parsers/resumeParser");
+
 const fs = require("fs");
 
 const uploadResume = async (req, res) => {
@@ -12,35 +18,179 @@ const uploadResume = async (req, res) => {
             });
         }
 
-        const result = await cloudinary.uploader.upload(req.file.path, {
-            resource_type: "raw",
-            folder: "HireIQ/Resumes"
-        });
+        const existingUser = await User.findById(req.user.id);
 
-        fs.unlinkSync(req.file.path);
+        if (!existingUser) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        // -----------------------------
+        // STEP 1 : Extract PDF Text
+        // -----------------------------
+
+        const rawText = await extractText(req.file.path);
+
+        // -----------------------------
+        // STEP 2 : Parse using Gemini
+        // -----------------------------
+
+        const parsedResume = await parseResume(rawText);
+
+        // -----------------------------
+        // STEP 3 : Delete old resume
+        // -----------------------------
+
+        if (existingUser.resumePublicId) {
+
+            try {
+
+                await cloudinary.uploader.destroy(
+                    existingUser.resumePublicId,
+                    {
+                        resource_type: "raw"
+                    }
+                );
+
+            } catch (error) {
+
+                console.log(
+                    "Old resume deletion failed:",
+                    error.message
+                );
+
+            }
+
+        }
+
+        // -----------------------------
+        // STEP 4 : Upload new resume
+        // -----------------------------
+
+        const result = await cloudinary.uploader.upload(
+            req.file.path,
+            {
+                resource_type: "raw",
+                folder: "HireIQ/Resumes",
+                public_id: `resume_${req.user.id}`,
+                overwrite: true
+            }
+        );
+
+        // -----------------------------
+        // STEP 5 : Update User
+        // -----------------------------
 
         const user = await User.findByIdAndUpdate(
             req.user.id,
             {
-                resume: result.secure_url
+                resume: result.secure_url,
+                resumePublicId: result.public_id
             },
             {
                 new: true
             }
         ).select("-password");
 
+        // -----------------------------
+        // STEP 6 : Save Parsed Resume
+        // -----------------------------
+
+        await ResumeAI.findOneAndUpdate(
+
+            {
+                candidate: req.user.id
+            },
+
+            {
+
+                candidate: req.user.id,
+
+                resumeUrl: result.secure_url,
+
+                rawText,
+
+                parsedResume
+
+            },
+
+            {
+
+                upsert: true,
+
+                new: true
+
+            }
+
+        );
+
+        // -----------------------------
+        // STEP 7 : Delete local file
+        // -----------------------------
+
+        if (fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
+
+        // -----------------------------
+        // STEP 8 : Response
+        // -----------------------------
+
         return res.status(200).json({
+
             success: true,
-            message: "Resume uploaded successfully",
-            resume: user.resume,
+
+            message: "Resume uploaded and parsed successfully.",
+
+            resumeUrl: result.secure_url,
+
+            parsedResume,
+
             user
+
         });
 
     } catch (error) {
 
-        if (req.file) {
+        if (req.file && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
         }
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: error.message
+
+        });
+
+    }
+};
+
+const getProfile = async (req, res) => {
+
+    try {
+
+        const user = await User.findById(req.user.id)
+            .select("-password");
+
+        if (!user) {
+
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+
+        }
+
+        return res.status(200).json({
+            success: true,
+            user
+        });
+
+    } catch (error) {
 
         return res.status(500).json({
             success: false,
@@ -48,8 +198,10 @@ const uploadResume = async (req, res) => {
         });
 
     }
+
 };
 
 module.exports = {
-    uploadResume
+    uploadResume,
+    getProfile,
 };

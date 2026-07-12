@@ -2,38 +2,60 @@ const express = require("express");
 
 const app = express();
 
-const authRoutes = require("./routes/authRoutes");
-
-const testRoutes = require("./routes/testRoutes");
-
-const jobRoutes = require("./routes/jobRoutes");
-
-const companyRoutes = require("./routes/companyRoutes");
-
-const applicationRoutes = require("./routes/applicationRoutes");
-
-const userRoutes = require("./routes/userRoutes");
+// ----------------------
+// Middleware
+// ----------------------
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use("/api/users", userRoutes);
+// ----------------------
+// Routes
+// ----------------------
 
-app.use("/api/test", testRoutes);
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+const companyRoutes = require("./routes/companyRoutes");
+const jobRoutes = require("./routes/jobRoutes");
+const applicationRoutes = require("./routes/applicationRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const aiRoutes = require("./routes/aiRoutes");
+const testRoutes = require("./routes/testRoutes");
 
-app.use("/api/jobs", jobRoutes);
-
-app.use("/api/company", companyRoutes);
-
-app.get("/", (req, res) => {
-    res.send("Welcome to HireIQ API 🚀");
-});
+// ----------------------
+// API Routes
+// ----------------------
 
 app.use("/api/auth", authRoutes);
 
+app.use("/api/users", userRoutes);
+
+app.use("/api/company", companyRoutes);
+
+app.use("/api/jobs", jobRoutes);
+
 app.use("/api/applications", applicationRoutes);
 
-module.exports = app;
+app.use("/api/dashboard", dashboardRoutes);
+
+app.use("/api/ai", aiRoutes);
+
+app.use("/api/test", testRoutes);
+
+// ----------------------
+// Home Route
+// ----------------------
+
+app.get("/", (req, res) => {
+    res.send("🚀 Welcome to HireIQ API");
+});
+
+// ----------------------
+// Error Handler
+// ----------------------
 
 const errorHandler = require("./middleware/errorMiddleware");
 
 app.use(errorHandler);
+
+module.exports = app;
