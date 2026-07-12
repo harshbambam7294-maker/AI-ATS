@@ -7,7 +7,8 @@ const upload = require("../middleware/upload");
 
 const {
     uploadResume,
-    getProfile
+    getProfile,
+    updateProfile,
 } = require("../controllers/userController");
 
 router.post(
@@ -16,6 +17,17 @@ router.post(
     authorize("candidate"),
     upload.single("resume"),
     uploadResume
+);
+
+
+router.put(
+
+    "/",
+
+    protect,
+
+    updateProfile
+
 );
 
 router.get(

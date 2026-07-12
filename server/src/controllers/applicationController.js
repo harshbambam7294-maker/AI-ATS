@@ -221,10 +221,54 @@ const updateApplicationStatus = async (req, res) => {
     }
 };
 
+
+const getRecruiterApplications = async (req, res) => {
+
+    try {
+
+        const jobs = await Job.find({
+            createdBy: req.user.id
+        });
+
+        const jobIds = jobs.map(job => job._id);
+
+        const applications = await Application.find({
+            job: {
+                $in: jobIds
+            }
+        })
+        .populate("candidate", "name email resume")
+        .populate("job", "title");
+
+        return res.status(200).json({
+
+            success: true,
+
+            count: applications.length,
+
+            applications
+
+        });
+
+    } catch (error) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: error.message
+
+        });
+
+    }
+
+};
+
 module.exports = {
     applyJob,
     getMyApplications,
     withdrawApplication,
     getApplicantsByJob,
     updateApplicationStatus,
+    getRecruiterApplications,
 };

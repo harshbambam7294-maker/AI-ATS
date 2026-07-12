@@ -258,6 +258,8 @@ const updateJob = async (req, res) => {
             }
         );
 
+        await job.save();
+
         return res.status(200).json({
             success: true,
             message: "Job updated successfully",

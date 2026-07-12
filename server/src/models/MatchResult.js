@@ -30,7 +30,9 @@ const matchResultSchema = new mongoose.Schema({
 
     missingSkills: [String],
 
-    recommendation: String
+    recommendation: String,
+
+    matchedSkills: [String]
 
 },{
     timestamps:true

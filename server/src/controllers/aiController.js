@@ -47,6 +47,13 @@ const generateMatch = async (req, res) => {
             jobAI
         );
 
+        const candidate = await User.findById(candidateId)
+        .select("name email");
+
+        const job = await Job.findById(jobId)
+        .populate("company", "name");
+
+
         const match = await MatchResult.findOneAndUpdate(
             {
                 candidate: candidateId,
@@ -66,7 +73,9 @@ const generateMatch = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Candidate matched successfully.",
-            match
+            match,
+            candidate,
+            job
         });
 
     } catch (error) {
@@ -120,17 +129,17 @@ const generateResumeReview = async (req, res) => {
 
     try {
 
-        const { candidateId } = req.params;
-
         const resumeAI = await ResumeAI.findOne({
-            candidate: candidateId
+            candidate: req.user.id
         });
 
         if (!resumeAI) {
+
             return res.status(404).json({
                 success: false,
                 message: "Resume not found"
             });
+
         }
 
         const review = await reviewResume(
@@ -144,16 +153,24 @@ const generateResumeReview = async (req, res) => {
 
         await resumeAI.save();
 
-        return res.status(200).json({
+        return res.json({
+
             success: true,
+
             review
+
         });
 
-    } catch (error) {
+    }
+
+    catch(error){
 
         return res.status(500).json({
-            success: false,
-            message: error.message
+
+            success:false,
+
+            message:error.message
+
         });
 
     }
@@ -201,9 +218,7 @@ const generateInterviewQuestions = async (req, res) => {
 
         }
 
-        const prompt = `
-
-${interviewPrompt}
+        const prompt = `${interviewPrompt}
 
 Candidate Resume
 
@@ -239,15 +254,24 @@ ${JSON.stringify(jobAI.parsedJob, null, 2)}
 
         }
 
+        const candidate = await User.findById(candidateId)
+        .select("name email");
+
+        const job = await Job.findById(jobId)
+        .populate("company", "name");
+
         const questions = JSON.parse(output);
 
         return res.status(200).json({
 
             success: true,
-
+            candidate,
+            job,
             questions
 
         });
+
+        
 
     } catch (error) {
 

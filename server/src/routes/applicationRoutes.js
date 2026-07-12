@@ -10,6 +10,7 @@ const {
     withdrawApplication,
     getApplicantsByJob,
     updateApplicationStatus,
+    getRecruiterApplications,
 } = require("../controllers/applicationController");
 
 // Apply for a job
@@ -34,6 +35,13 @@ router.delete(
     protect,
     authorize("candidate"),
     withdrawApplication
+);
+
+router.get(
+    "/",
+    protect,
+    authorize("recruiter"),
+    getRecruiterApplications
 );
 
 // Recruiter views applicants of a job

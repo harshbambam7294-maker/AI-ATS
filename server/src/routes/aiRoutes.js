@@ -21,9 +21,10 @@ router.get(
     getRankings
 );
 
-router.post(
-    "/review/:candidateId",
+router.get(
+    "/review",
     protect,
+    authorize("candidate"),
     generateResumeReview
 );
 
