@@ -1,11 +1,20 @@
-function Footer() {
-  return (
-    <footer className="bg-slate-900 py-8 text-center text-white">
-      <p className="text-gray-400">
-        © 2026 HireIQ. All Rights Reserved.
-      </p>
-    </footer>
-  );
-}
+const Footer = () => {
+
+    return (
+
+        <footer className="bg-white border-t py-6">
+
+            <div className="max-w-7xl mx-auto text-center text-slate-500">
+
+                © 2026 HireIQ.
+                AI Powered Applicant Tracking System.
+
+            </div>
+
+        </footer>
+
+    );
+
+};
 
 export default Footer;

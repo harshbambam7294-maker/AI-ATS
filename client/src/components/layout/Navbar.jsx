@@ -1,31 +1,86 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
-function Navbar() {
-  return (
-    <nav className="sticky top-0 z-50 bg-slate-900 text-white shadow-lg">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-4">
-        <h1 className="text-3xl font-bold text-blue-500">
-          HireIQ
-        </h1>
+const Navbar = () => {
 
-        <div className="flex items-center gap-4">
-          <Link
-            to="/login"
-            className="rounded-lg px-5 py-2 transition hover:bg-slate-700"
-          >
-            Login
-          </Link>
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
 
-          <Link
-            to="/register"
-            className="rounded-lg bg-blue-600 px-5 py-2 transition hover:bg-blue-700"
-          >
-            Register
-          </Link>
-        </div>
-      </div>
-    </nav>
-  );
-}
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
+
+    return (
+
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200 shadow-sm">
+
+            <div className="max-w-7xl mx-auto flex items-center justify-between px-6 h-16">
+
+                <Link
+                    to="/"
+                    className="text-2xl font-bold text-blue-600"
+                >
+                    HireIQ
+                </Link>
+
+                <div className="flex items-center gap-6">
+
+                    <Link to="/">Home</Link>
+
+                    <Link to="/jobs">
+                        Jobs
+                    </Link>
+
+                    {!user && (
+
+                        <>
+                            <Link to="/login">
+                                Login
+                            </Link>
+
+                            <Link
+                                to="/register"
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+                            >
+                                Register
+                            </Link>
+                        </>
+
+                    )}
+
+                    {user && (
+
+                        <>
+                            <Link
+                                to={
+                                    user.role === "recruiter"
+                                        ? "/recruiter/dashboard"
+                                        : "/candidate/dashboard"
+                                }
+                            >
+                                Dashboard
+                            </Link>
+
+                            <button
+                                onClick={handleLogout}
+                                className="text-red-500"
+                            >
+                                Logout
+                            </button>
+
+                        </>
+
+                    )}
+
+                </div>
+
+            </div>
+
+        </nav>
+
+    );
+
+};
 
 export default Navbar;
