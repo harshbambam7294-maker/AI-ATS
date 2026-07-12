@@ -4,7 +4,8 @@ const router = express.Router();
 
 const { protect, authorize } = require("../middleware/authMiddleware");
 
-const { generateMatch, getRankings, generateResumeReview } = require("../controllers/aiController");
+const { generateMatch, getRankings, generateResumeReview, generateInterviewQuestions } = require("../controllers/aiController");
+
 
 router.post(
     "/match",
@@ -24,6 +25,18 @@ router.post(
     "/review/:candidateId",
     protect,
     generateResumeReview
+);
+
+router.post(
+
+    "/interview",
+
+    protect,
+
+    authorize("recruiter"),
+
+    generateInterviewQuestions
+
 );
 
 module.exports = router;

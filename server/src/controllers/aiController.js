@@ -2,6 +2,8 @@ const ResumeAI = require("../models/ResumeAI");
 const JobAI = require("../models/JobAI");
 const MatchResult = require("../models/MatchResult");
 const reviewResume = require("../ai/generators/resumeReview");
+const ai = require("../ai/services/geminiService");
+const interviewPrompt = require("../ai/prompts/interviewPrompt");
 
 const matchCandidate = require("../ai/engines/matchingEngine");
 
@@ -158,8 +160,114 @@ const generateResumeReview = async (req, res) => {
 
 };
 
+const generateInterviewQuestions = async (req, res) => {
+
+    try {
+
+        const { candidateId, jobId } = req.body;
+
+        if (!candidateId || !jobId) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Candidate ID and Job ID are required."
+            });
+
+        }
+
+        const resumeAI = await ResumeAI.findOne({
+            candidate: candidateId
+        });
+
+        if (!resumeAI) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Resume AI not found."
+            });
+
+        }
+
+        const jobAI = await JobAI.findOne({
+            job: jobId
+        });
+
+        if (!jobAI) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Job AI not found."
+            });
+
+        }
+
+        const prompt = `
+
+${interviewPrompt}
+
+Candidate Resume
+
+${JSON.stringify(resumeAI.parsedResume, null, 2)}
+
+Job Description
+
+${JSON.stringify(jobAI.parsedJob, null, 2)}
+
+`;
+
+        const response = await ai.models.generateContent({
+
+            model: "gemini-3.5-flash",
+
+            contents: prompt
+
+        });
+
+        let output = response.text;
+
+        output = output
+            .replace(/```json/g, "")
+            .replace(/```/g, "")
+            .trim();
+
+        const start = output.indexOf("{");
+        const end = output.lastIndexOf("}");
+
+        if (start !== -1 && end !== -1) {
+
+            output = output.substring(start, end + 1);
+
+        }
+
+        const questions = JSON.parse(output);
+
+        return res.status(200).json({
+
+            success: true,
+
+            questions
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: error.message
+
+        });
+
+    }
+
+};
+
 module.exports = {
     generateMatch,
     getRankings,
-    generateResumeReview
+    generateResumeReview,
+    generateInterviewQuestions
 };
