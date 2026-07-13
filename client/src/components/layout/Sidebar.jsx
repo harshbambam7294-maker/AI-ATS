@@ -26,17 +26,6 @@ const Sidebar = () => {
             name: "Applications",
             path: "/recruiter/applications",
         },
-
-        {
-            name: "AI Matching",
-            path: "/recruiter/matching",
-        },
-
-        {
-            name: "Interview Questions",
-            path: "/recruiter/interview",
-        },
-
     ];
 
     const candidateLinks = [
@@ -57,13 +46,13 @@ const Sidebar = () => {
         },
 
         {
-            name: "Resume",
-            path: "/candidate/resume",
+            name: "Profile",
+            path: "/candidate/profile",
         },
 
         {
             name: "Resume Review",
-            path: "/candidate/review",
+            path: "/candidate/resume-review",
         },
 
     ];

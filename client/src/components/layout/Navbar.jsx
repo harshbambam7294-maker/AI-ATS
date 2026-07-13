@@ -4,11 +4,15 @@ import { useAuth } from "../../context/AuthContext";
 const Navbar = () => {
 
     const { user, logout } = useAuth();
+
     const navigate = useNavigate();
 
     const handleLogout = () => {
+
         logout();
+
         navigate("/login");
+
     };
 
     return (
@@ -21,57 +25,104 @@ const Navbar = () => {
                     to="/"
                     className="text-2xl font-bold text-blue-600"
                 >
+
                     HireIQ
+
                 </Link>
 
                 <div className="flex items-center gap-6">
 
-                    <Link to="/">Home</Link>
+                    <Link
+                        to="/"
+                        className="hover:text-blue-600"
+                    >
 
-                    <Link to="/jobs">
-                        Jobs
+                        Home
+
                     </Link>
 
-                    {!user && (
+                    {
 
-                        <>
-                            <Link to="/login">
-                                Login
-                            </Link>
+                        !user && (
 
-                            <Link
-                                to="/register"
-                                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-                            >
-                                Register
-                            </Link>
-                        </>
+                            <>
 
-                    )}
+                                <Link
+                                    to="/login"
+                                    className="hover:text-blue-600"
+                                >
 
-                    {user && (
+                                    Login
 
-                        <>
-                            <Link
-                                to={
-                                    user.role === "recruiter"
-                                        ? "/recruiter/dashboard"
-                                        : "/candidate/dashboard"
-                                }
-                            >
-                                Dashboard
-                            </Link>
+                                </Link>
 
-                            <button
-                                onClick={handleLogout}
-                                className="text-red-500"
-                            >
-                                Logout
-                            </button>
+                                <Link
+                                    to="/register"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                                >
 
-                        </>
+                                    Register
 
-                    )}
+                                </Link>
+
+                            </>
+
+                        )
+
+                    }
+
+                    {
+
+                        user && (
+
+                            <>
+
+                                <div className="text-right">
+
+                                    <p className="font-semibold">
+
+                                        {user.name}
+
+                                    </p>
+
+                                    <p className="text-xs text-slate-500 capitalize">
+
+                                        {user.role}
+
+                                    </p>
+
+                                </div>
+
+                                <Link
+                                    to={
+                                        user.role === "recruiter"
+                                            ? "/recruiter/dashboard"
+                                            : "/candidate/dashboard"
+                                    }
+                                    className="hover:text-blue-600"
+                                >
+
+                                    Dashboard
+
+                                </Link>
+
+                                <button
+
+                                    onClick={handleLogout}
+
+                                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+
+                                >
+
+                                    Logout
+
+                                </button>
+
+                            </>
+
+                        )
+
+                    }
 
                 </div>
 
