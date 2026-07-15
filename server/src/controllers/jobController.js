@@ -1,10 +1,10 @@
 const Job = require("../models/Job");
 const Company = require("../models/Company");
 const JobAI = require("../models/JobAI");
-const parseJob = require("../ai/parsers/jobParser");
+const parseJob = require("../AI/parsers/jobParser");
 
 const createJob = async (req, res) => {
-
+S
     try {
 
         const {

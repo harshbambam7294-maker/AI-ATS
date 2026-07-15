@@ -3,9 +3,9 @@ const ResumeAI = require("../models/ResumeAI");
 
 const cloudinary = require("../config/cloudinary");
 
-const extractText = require("../ai/parsers/pdfParser");
-const parseResume = require("../ai/parsers/resumeParser");
-const reviewResume = require("../ai/parsers/resumeParser");
+const extractText = require("../AI/parsers/pdfParser");
+const parseResume = require("../AI/parsers/resumeParser");
+const reviewResume = require("../AI/parsers/resumeParser");
 
 const fs = require("fs");
 
