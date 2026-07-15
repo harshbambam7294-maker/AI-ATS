@@ -149,7 +149,9 @@ const MatchReport = () => {
 
         <span>
 
-            {new Date(match.createdAt).toLocaleString()}
+            {match?.createdAt
+    ? new Date(match.createdAt).toLocaleDateString()
+    : "-"}
 
         </span>
 

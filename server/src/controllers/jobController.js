@@ -399,22 +399,46 @@ const getPublicJobs = async (req, res) => {
 };
 
 const getPublicJobById = async (req, res) => {
+
     try {
-        const job = await Job.findById(req.params.id).populate("company");
+
+        const job = await Job.findById(req.params.id)
+            .populate("company");
 
         if (!job) {
+
             return res.status(404).json({
+
+                success: false,
+
                 message: "Job not found"
+
             });
+
         }
 
-        res.status(200).json(job);
+        return res.status(200).json({
 
-    } catch (error) {
-        res.status(500).json({
-            message: error.message
+            success: true,
+
+            job
+
         });
+
     }
+
+    catch (error) {
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: error.message
+
+        });
+
+    }
+
 };
 
 module.exports = {

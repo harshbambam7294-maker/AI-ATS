@@ -53,7 +53,9 @@ const RecentApplications = ({ applications }) => {
 
                             {
 
-                                applications.map(app => (
+                                applications
+                                .filter(app=>app.job)
+                                .map(app => (
 
                                     <div
 

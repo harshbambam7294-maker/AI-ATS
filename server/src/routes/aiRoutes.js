@@ -4,7 +4,7 @@ const router = express.Router();
 
 const { protect, authorize } = require("../middleware/authMiddleware");
 
-const { generateMatch, getRankings, generateResumeReview, generateInterviewQuestions } = require("../controllers/aiController");
+const { generateMatch, getRankings, generateResumeReview, generateInterviewQuestions, generateAIReview } = require("../controllers/aiController");
 
 
 router.post(
@@ -26,6 +26,13 @@ router.get(
     protect,
     authorize("candidate"),
     generateResumeReview
+);
+
+router.post(
+    "/generate-review",
+    protect,
+    authorize("candidate"),
+    generateAIReview
 );
 
 router.post(

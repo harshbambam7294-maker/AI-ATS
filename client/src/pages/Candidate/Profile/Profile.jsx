@@ -1,13 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../../../services/api";
 
 const Profile = () => {
 
     const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
 
     const [user, setUser] = useState(null);
 
-    const [resumeAI, setResumeAI] = useState(null);
+    const [resumeFile, setResumeFile] = useState(null);
+
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
 
@@ -19,11 +23,9 @@ const Profile = () => {
 
         try {
 
-            const res = await api.get("/profile");
+            const res = await api.get("/users/profile");
 
             setUser(res.data.user);
-
-            setResumeAI(res.data.resumeAI);
 
         }
 
@@ -34,6 +36,70 @@ const Profile = () => {
         }
 
         setLoading(false);
+
+    };
+
+    const uploadResume = async () => {
+
+        if (!resumeFile) {
+
+            alert("Please select a PDF resume.");
+
+            return;
+
+        }
+
+        const formData = new FormData();
+
+        formData.append("resume", resumeFile);
+
+        try {
+
+            setUploading(true);
+
+            const res = await api.post(
+
+                "/users/upload-resume",
+
+                formData,
+
+                {
+
+                    headers: {
+
+                        "Content-Type": "multipart/form-data"
+
+                    }
+
+                }
+
+            );
+
+            alert(res.data.message);
+
+            fetchProfile();
+
+            setResumeFile(null);
+
+            fileInputRef.current.value = "";
+
+        }
+
+        catch (err) {
+
+            console.log(err);
+
+            alert(
+
+                err.response?.data?.message ||
+
+                "Resume upload failed."
+
+            );
+
+        }
+
+        setUploading(false);
 
     };
 
@@ -93,7 +159,7 @@ const Profile = () => {
 
             </div>
 
-            {/* Personal Info */}
+            {/* Personal Information */}
 
             <div className="bg-white rounded-2xl shadow-sm p-8">
 
@@ -103,7 +169,7 @@ const Profile = () => {
 
                 </h2>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-8">
 
                     <div>
 
@@ -113,7 +179,7 @@ const Profile = () => {
 
                         </p>
 
-                        <h3 className="text-lg font-semibold">
+                        <h3 className="font-semibold text-lg">
 
                             {user?.name}
 
@@ -129,7 +195,7 @@ const Profile = () => {
 
                         </p>
 
-                        <h3 className="text-lg font-semibold">
+                        <h3 className="font-semibold text-lg">
 
                             {user?.email}
 
@@ -145,7 +211,7 @@ const Profile = () => {
 
                         </p>
 
-                        <h3 className="text-lg font-semibold capitalize">
+                        <h3 className="font-semibold text-lg capitalize">
 
                             {user?.role}
 
@@ -157,39 +223,23 @@ const Profile = () => {
 
                         <p className="text-slate-500">
 
-                            Resume
+                            Resume Status
 
                         </p>
 
-                        {
+                        <h3 className="font-semibold text-lg">
 
-                            user?.resume ?
+                            {
 
-                            <a
+                                user?.resume
 
-                                href={user.resume}
+                                    ? "✅ Uploaded"
 
-                                target="_blank"
+                                    : "❌ Not Uploaded"
 
-                                rel="noreferrer"
+                            }
 
-                                className="text-blue-600 underline"
-
-                            >
-
-                                View Uploaded Resume
-
-                            </a>
-
-                            :
-
-                            <span className="text-red-600">
-
-                                No Resume Uploaded
-
-                            </span>
-
-                        }
+                        </h3>
 
                     </div>
 
@@ -197,206 +247,87 @@ const Profile = () => {
 
             </div>
 
-            {/* AI Resume Summary */}
+            {/* Resume */}
 
             <div className="bg-white rounded-2xl shadow-sm p-8">
 
-                <h2 className="text-2xl font-bold mb-8">
+                <h2 className="text-2xl font-bold mb-6">
 
-                    AI Resume Summary
+                    Resume
 
                 </h2>
 
                 {
 
-                    !resumeAI ?
+                    user?.resume ?
 
-                    (
+                    <a
 
-                        <div className="text-center py-10 text-slate-500">
+                        href={user.resume}
 
-                            Upload your resume to generate AI insights.
+                        target="_blank"
 
-                        </div>
+                        rel="noreferrer"
 
-                    )
+                        className="text-blue-600 underline font-medium"
+
+                    >
+
+                        View Uploaded Resume
+
+                    </a>
 
                     :
 
-                    (
+                    <p className="text-slate-500">
 
-                        <div className="space-y-8">
+                        No resume uploaded.
 
-                            <div>
-
-                                <h3 className="font-semibold text-lg mb-3">
-
-                                    Professional Summary
-
-                                </h3>
-
-                                <p className="text-slate-700 leading-8">
-
-                                    {resumeAI.parsedResume?.summary || "Not Available"}
-
-                                </p>
-
-                            </div>
-
-                            <div>
-
-                                <h3 className="font-semibold text-lg mb-3">
-
-                                    Skills
-
-                                </h3>
-
-                                <div className="flex flex-wrap gap-3">
-
-                                    {
-
-                                        resumeAI.parsedResume?.skills?.map((skill, index) => (
-
-                                            <span
-
-                                                key={index}
-
-                                                className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full"
-
-                                            >
-
-                                                {skill}
-
-                                            </span>
-
-                                        ))
-
-                                    }
-
-                                </div>
-
-                            </div>
-
-                            <div>
-
-                                <h3 className="font-semibold text-lg mb-3">
-
-                                    Education
-
-                                </h3>
-
-                                <ul className="space-y-3">
-
-                                    {
-
-                                        resumeAI.parsedResume?.education?.map((edu, index) => (
-
-                                            <li
-
-                                                key={index}
-
-                                                className="border rounded-xl p-4"
-
-                                            >
-
-                                                {typeof edu === "string"
-
-                                                    ? edu
-                                                    : JSON.stringify(edu)}
-
-                                            </li>
-
-                                        ))
-
-                                    }
-
-                                </ul>
-
-                            </div>
-
-                            <div>
-
-                                <h3 className="font-semibold text-lg mb-3">
-
-                                    Experience
-
-                                </h3>
-
-                                <ul className="space-y-3">
-
-                                    {
-
-                                        resumeAI.parsedResume?.experience?.map((exp, index) => (
-
-                                            <li
-
-                                                key={index}
-
-                                                className="border rounded-xl p-4"
-
-                                            >
-
-                                                {typeof exp === "string"
-
-                                                    ? exp
-                                                    : JSON.stringify(exp)}
-
-                                            </li>
-
-                                        ))
-
-                                    }
-
-                                </ul>
-
-                            </div>
-
-                            <div>
-
-                                <h3 className="font-semibold text-lg mb-3">
-
-                                    Projects
-
-                                </h3>
-
-                                <ul className="space-y-3">
-
-                                    {
-
-                                        resumeAI.parsedResume?.projects?.map((project, index) => (
-
-                                            <li
-
-                                                key={index}
-
-                                                className="border rounded-xl p-4"
-
-                                            >
-
-                                                {typeof project === "string"
-
-                                                    ? project
-                                                    : JSON.stringify(project)}
-
-                                            </li>
-
-                                        ))
-
-                                    }
-
-                                </ul>
-
-                            </div>
-
-                        </div>
-
-                    )
+                    </p>
 
                 }
 
+                <div className="mt-8">
+
+                    <input
+
+                        ref={fileInputRef}
+
+                        type="file"
+
+                        accept=".pdf"
+
+                        onChange={(e)=>setResumeFile(e.target.files[0])}
+
+                    />
+
+                    <button
+
+                        onClick={uploadResume}
+
+                        disabled={uploading}
+
+                        className="block mt-5 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl"
+
+                    >
+
+                        {
+
+                            uploading
+
+                                ? "Uploading..."
+
+                                : "Upload Resume"
+
+                        }
+
+                    </button>
+
+                </div>
+
             </div>
 
-            {/* Actions */}
+            {/* Quick Actions */}
 
             <div className="bg-white rounded-2xl shadow-sm p-8">
 
@@ -406,43 +337,55 @@ const Profile = () => {
 
                 </h2>
 
-                <div className="flex flex-wrap gap-5">
+                <div className="grid md:grid-cols-3 gap-6">
 
-                    <a
+                    <Link
 
-                        href="/candidate/jobs"
+                        to="/candidate/resume-review"
 
-                        className="bg-blue-600 text-white px-6 py-3 rounded-xl"
-
-                    >
-
-                        Browse Jobs
-
-                    </a>
-
-                    <a
-
-                        href="/candidate/applications"
-
-                        className="bg-green-600 text-white px-6 py-3 rounded-xl"
+                        className="bg-purple-600 text-white rounded-xl p-6 text-center hover:bg-purple-700"
 
                     >
 
-                        My Applications
+                        🤖
 
-                    </a>
-
-                    <a
-
-                        href="/candidate/resume-review"
-
-                        className="bg-purple-600 text-white px-6 py-3 rounded-xl"
-
-                    >
+                        <br /><br />
 
                         AI Resume Review
 
-                    </a>
+                    </Link>
+
+                    <Link
+
+                        to="/candidate/jobs"
+
+                        className="bg-blue-600 text-white rounded-xl p-6 text-center hover:bg-blue-700"
+
+                    >
+
+                        💼
+
+                        <br /><br />
+
+                        Browse Jobs
+
+                    </Link>
+
+                    <Link
+
+                        to="/candidate/applications"
+
+                        className="bg-green-600 text-white rounded-xl p-6 text-center hover:bg-green-700"
+
+                    >
+
+                        📄
+
+                        <br /><br />
+
+                        My Applications
+
+                    </Link>
 
                 </div>
 

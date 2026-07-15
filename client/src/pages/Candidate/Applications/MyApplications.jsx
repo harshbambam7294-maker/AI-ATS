@@ -127,7 +127,9 @@ const MyApplications = () => {
 
                         {
 
-                            applications.map(app => (
+                            applications
+                            .filter(app=>app.job)
+                            .map(app => (
 
                                 <ApplicationCard
 

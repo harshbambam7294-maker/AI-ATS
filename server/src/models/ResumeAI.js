@@ -107,7 +107,12 @@ const resumeAISchema = new mongoose.Schema({
         }],
 
         certifications: [{
-            type: String
+            name: String,
+
+            issuer: String,
+
+            year: String
+
         }],
 
         languages: [{

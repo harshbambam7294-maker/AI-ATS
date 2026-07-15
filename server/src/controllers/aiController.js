@@ -1,11 +1,14 @@
 const ResumeAI = require("../models/ResumeAI");
 const JobAI = require("../models/JobAI");
 const MatchResult = require("../models/MatchResult");
-const reviewResume = require("../ai/generators/resumeReview");
-const ai = require("../ai/services/geminiService");
-const interviewPrompt = require("../ai/prompts/interviewPrompt");
+const ai = require("../AI/services/geminiService");
+const interviewPrompt = require("../AI/prompts/interviewPrompt");
+const reviewResume = require("../AI/generators/resumeReview");
 
-const matchCandidate = require("../ai/engines/matchingEngine");
+const matchCandidate = require("../AI/engines/matchingEngine");
+
+const User = require("../models/User");
+const Job = require("../models/Job");
 
 const generateMatch = async (req, res) => {
 
@@ -130,46 +133,52 @@ const generateResumeReview = async (req, res) => {
     try {
 
         const resumeAI = await ResumeAI.findOne({
+
             candidate: req.user.id
+
         });
 
         if (!resumeAI) {
 
             return res.status(404).json({
+
                 success: false,
+
                 message: "Resume not found"
+
             });
 
         }
 
-        const review = await reviewResume(
-            resumeAI.parsedResume
-        );
-
-        resumeAI.atsScore = review.atsScore;
-        resumeAI.strengths = review.strengths;
-        resumeAI.weaknesses = review.weaknesses;
-        resumeAI.suggestions = review.suggestions;
-
-        await resumeAI.save();
-
-        return res.json({
+        return res.status(200).json({
 
             success: true,
 
-            review
+            review: {
+
+                atsScore: resumeAI.atsScore,
+
+                strengths: resumeAI.strengths,
+
+                weaknesses: resumeAI.weaknesses,
+
+                suggestions: resumeAI.suggestions
+
+            },
+
+            parsedResume: resumeAI.parsedResume
 
         });
 
     }
 
-    catch(error){
+    catch (error) {
 
         return res.status(500).json({
 
-            success:false,
+            success: false,
 
-            message:error.message
+            message: error.message
 
         });
 
@@ -289,9 +298,74 @@ ${JSON.stringify(jobAI.parsedJob, null, 2)}
 
 };
 
+const generateAIReview = async (req, res) => {
+
+    try {
+
+        const resumeAI = await ResumeAI.findOne({
+
+            candidate: req.user.id
+
+        });
+
+        if (!resumeAI) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message: "Resume not found"
+
+            });
+
+        }
+
+        const review = await reviewResume(
+
+            resumeAI.parsedResume
+
+        );
+
+        resumeAI.atsScore = review.atsScore;
+
+        resumeAI.strengths = review.strengths;
+
+        resumeAI.weaknesses = review.weaknesses;
+
+        resumeAI.suggestions = review.suggestions;
+
+        await resumeAI.save();
+
+        return res.status(200).json({
+
+            success: true,
+
+            message: "AI Review Generated Successfully",
+
+            review
+
+        });
+
+    }
+
+    catch(error){
+
+        return res.status(500).json({
+
+            success:false,
+
+            message:error.message
+
+        });
+
+    }
+
+};
+
 module.exports = {
     generateMatch,
     getRankings,
     generateResumeReview,
-    generateInterviewQuestions
+    generateInterviewQuestions,
+    generateAIReview
 };
