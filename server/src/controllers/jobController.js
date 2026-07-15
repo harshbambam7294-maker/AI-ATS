@@ -4,7 +4,7 @@ const JobAI = require("../models/JobAI");
 const parseJob = require("../AI/parsers/jobParser");
 
 const createJob = async (req, res) => {
-S
+
     try {
 
         const {
